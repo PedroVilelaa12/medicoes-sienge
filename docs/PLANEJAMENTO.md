@@ -305,6 +305,40 @@ V1 a V13 vieram do contexto. **V14 a V19 surgiram da leitura da API.**
 
 **Protótipo:** `interface/index.html` abre com duplo clique, sem instalação, e usa dados fictícios. As regras estão replicadas em JavaScript **só para o protótipo**. Na versão real, a tela chama o serviço e não decide nada sozinha.
 
+### 6.1 Tutorial de primeiro acesso [PLANEJADO]
+
+No primeiro acesso, a ferramenta faz um tour guiado no estilo de tutorial de jogo:
+- **O que está sendo explicado fica iluminado, e o resto da tela escurece.**
+- Uma caixa de texto ao lado do destaque explica o passo e traz **Próximo** e **Pular**.
+- Ao clicar em Próximo, o destaque **desliza** até o próximo elemento, e a caixa acompanha.
+
+| Passo | Elemento iluminado | Texto da caixa (rascunho) |
+|---|---|---|
+| 1 | Área de soltar | "Comece soltando aqui os boletos e as notas fiscais da semana. Cada arquivo vira um card." |
+| 2 | Um card sendo arrastado para dentro de outro | "Boleto e nota do mesmo fornecedor? Arraste um card para dentro do outro: eles viram uma medição só." |
+| 3 | Uma linha da lista, aberta | "Abra cada medição: o documento fica à esquerda e os campos à direita. Você só informa contrato, valor e observação." |
+| 4 | Campos preenchidos pelo sistema | "O que aparece com este fundo o sistema já preencheu: obra, item, saldo e vencimento. Confira, mas não precisa digitar." |
+| 5 | Chip de status | "O status mostra o que falta. Só as medições prontas podem ser lançadas." |
+| 6 | Botão "Lançar N prontas" | "Quando quiser, lance as prontas. Você confirma o total antes, e nada é gravado sem isso." |
+| 7 | Comprovante e pendências | "Depois, confira o comprovante. Se faltar algo no Sienge, como a avaliação do fornecedor, aparece aqui com o link." |
+
+**Comportamento:**
+- Aparece só no primeiro acesso. Depois fica disponível em "Ajuda › Rever tutorial".
+- Roda sobre um **lote de exemplo** com dados fictícios, para ela praticar sem mexer em medições reais. Ao terminar, o exemplo some.
+- "Pular" encerra a qualquer momento, "Voltar" volta um passo, e um indicador mostra a posição ("3 de 7").
+- **Movimento:** o recorte iluminado desliza e muda de tamanho até o próximo alvo (cerca de 300 ms, com desaceleração suave). A caixa se reposiciona ao lado do alvo, sem cobri-lo. Se o sistema estiver com "reduzir movimento" ativado (`prefers-reduced-motion`), a troca é instantânea.
+- **Acessibilidade:** o foco fica preso na caixa durante o tour; Esc pula; as setas avançam e voltam; o texto é anunciado ao leitor de tela (`aria-live`); o escurecimento mantém contraste AA no destaque.
+- O estado (concluído ou pulado) é salvo por usuária no servidor, não no navegador, para não reaparecer em outro computador.
+- Quando surgir uma função nova, como a leitura automática da fase 2, um mini-tour mostra só a novidade.
+
+**Implementação:** há duas opções.
+- Um componente próprio e pequeno: uma camada escura com um recorte (`box-shadow` ou máscara SVG), posicionado pelo `getBoundingClientRect()` do alvo e animado com CSS.
+- Uma biblioteca pronta de tours guiados (ex.: Driver.js, Shepherd.js), escolhida por acessibilidade, tamanho e licença.
+
+Esforço estimado: 1 a 2 dias, com a tela de lote já estável.
+
+**Como medir:** percentual de quem conclui o tutorial, tempo até o primeiro lote lançado e dúvidas de suporte na primeira semana.
+
 ---
 
 ## 7. Decisões e alternativas descartadas
@@ -406,7 +440,7 @@ V1 a V13 vieram do contexto. **V14 a V19 surgiram da leitura da API.**
 **Quatro semanas depois do desafio:**
 1. **Semana 1.** Integração de leitura em dry-run. A ferramenta refaz 20 medições antigas **sem gravar**, e o resultado é comparado com o que foi lançado à mão. Respostas às perguntas 1 a 5.
 2. **Semana 2.** Cliente HTTP real, SQLite e primeiros lançamentos reais em contratos simples, com a usuária ao lado.
-3. **Semana 3.** Serviço web e tela de lote em uso diário. Os imprevistos novos viram alertas mapeados.
+3. **Semana 3.** Serviço web e tela de lote em uso diário, com o tutorial de primeiro acesso (§6.1). Os imprevistos novos viram alertas mapeados.
 4. **Semana 4.** Guia de uma página, apresentação de 15 minutos para a equipe e painel de métricas.
 
 **Depois:** fase 2 (leitura de documentos, seção 8) · webhooks para avisar quando a medição for autorizada ou liberada · entrada por planilha · contratos com várias obras ou unidades.
