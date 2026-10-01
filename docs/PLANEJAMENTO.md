@@ -276,7 +276,8 @@ Qualquer passo de escrita pode falhar, e a retomada continua do passo que falhou
 
 ### 3.3 Idempotência, reconciliação e retomada
 
-- **Chave por medição:** `sha256(contrato + obra + item + quantidade + data congelada + hashes dos anexos)`. É gravada **antes** do POST.
+- **Chave por medição:** `sha256(contrato + obra + item + quantidade + data congelada + hashes dos anexos)`. É gravada **antes** do POST e **consultada**: se outro pedido já usou a mesma chave, vira imprevisto (V13), e nada é lançado.
+- **Três camadas contra a duplicata exata:** a V14 (a anterior ainda não está finalizada), a V5 (já existe medição no mês, só passa com confirmação) e a chave de idempotência. Há um teste que supera as duas primeiras de propósito para provar que a chave segura sozinha.
 - Se a medição já tem número do Sienge, **nunca** cria outra.
 - **Timeout ou queda depois do POST** deixam um estado ambíguo (`CRIACAO_ENVIADA`): a medição pode ter sido criada ou não. Antes de qualquer nova tentativa, a ferramenta consulta `GET …/measurements/all` por contrato, obra e data:
   - 1 medição com o mesmo valor → adota o número;
@@ -322,7 +323,7 @@ Qualquer passo de escrita pode falhar, e a retomada continua do passo que falhou
 | Vencimento | Ferramenta | Hoje + 15 dias corridos, sem ajuste para fim de semana ou feriado | DECIDIDO (o ajuste está EM ABERTO) |
 | Observação | Usuária | Pré-preenchida "Referente aos serviços prestados pelo {fornecedor} - {Mês}/{AAAA}", editável. Pode vir do parâmetro 843 | DECIDIDO (o texto final está EM ABERTO) |
 | Desautorizada (`makeUnauthorized`) | Ferramenta | `true` por padrão | ASSUMIDO |
-| Item que recebe o valor | Ferramenta | Em ordem: **(1)** só entram itens cujo saldo comporte o valor inteiro, senão o Sienge recusa; **(2)** entre eles, o mesmo item da última medição do contrato, por continuidade, que é o que ela faz hoje [roadmap]; **(3)** se não houver, o mais recente (com aditivo, depois maior referência); **(4)** se nenhum comportar, não divide sozinho: avisa, e ela decide. A tela mostra por que o item foi escolhido e permite trocar. A regra é validada no dry-run das 20 medições antigas | DECIDIDO (1, 3 e 4 implementados; o desempate e a divisão entre itens estão EM ABERTO) |
+| Item que recebe o valor | Ferramenta | Em ordem: **(1)** só entram itens cujo saldo comporte o valor inteiro, senão o Sienge recusa; **(2)** entre eles, o mesmo item da última medição do contrato, por continuidade, que é o que ela faz hoje; **(3)** se não houver, o mais recente (com aditivo, depois maior referência); **(4)** se nenhum comportar, não divide sozinho: avisa, e ela decide. A tela mostra por que o item foi escolhido e permite trocar. A regra é validada no dry-run das 20 medições antigas | DECIDIDO e implementado (o desempate e a divisão entre itens estão EM ABERTO) |
 | Quantidade | Ferramenta | `valor ÷ preço unitário`, 4 casas; mostra o valor efetivo | VERIFICADO |
 | Valor | Usuária | Maior que zero e até o saldo do item | DECIDIDO |
 | Saldo do item | Ferramenta | `(quantidade contratada − acumulado medido) × preço unitário` | DECIDIDO |
