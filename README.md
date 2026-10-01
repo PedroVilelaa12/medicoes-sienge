@@ -20,6 +20,7 @@ Este repositório é o **primeiro passo**. O planejamento está completo; o núc
 | [`docs/PLANEJAMENTO.md`](docs/PLANEJAMENTO.md) | Entender a solução inteira: o que a API do Sienge permite (verificado na spec oficial), a arquitetura, as regras, as validações, a interface, as decisões, a fase 2 (leitura de documentos), as perguntas para a área e o roadmap |
 | [`docs/CONTEXTO_automacao_medicoes.md`](docs/CONTEXTO_automacao_medicoes.md) | Ver o processo atual e as decisões das Etapas 1 e 2 (insumo de partida) |
 | [`docs/USO_DE_IA.md`](docs/USO_DE_IA.md) | Saber como a IA foi usada, o que foi verificado e o que foi corrigido |
+| [`docs/APRESENTACAO.md`](docs/APRESENTACAO.md) | Seguir o roteiro dos 10 minutos e preparar respostas para as perguntas prováveis |
 | [`interface/index.html`](interface/index.html) | Ver a tela de lote (abre com duplo clique) |
 
 ## O que a leitura da API mudou
