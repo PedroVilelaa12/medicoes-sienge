@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="estilo.css">
+  <link rel="stylesheet" href="tutorial.css">
 </head>
 <body>
   <header class="topo">
@@ -27,7 +28,10 @@
         <h1>Medições da semana</h1>
         <p class="resumo" id="resumo">Solte os documentos da semana para começar.</p>
       </div>
-      <button type="button" class="botao-texto" id="limpar">Limpar lote</button>
+      <div class="cabecalho-acoes">
+        <button type="button" class="botao-texto" id="ver-tutorial">Ver tutorial</button>
+        <button type="button" class="botao-texto" id="limpar">Limpar lote</button>
+      </div>
     </div>
 
     <section class="etapa" aria-labelledby="t-docs">
@@ -114,5 +118,6 @@
 
   <script src="dados.js"></script>
   <script src="app.js"></script>
+  <script src="tutorial.js"></script>
 </body>
 </html>

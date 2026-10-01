@@ -1,0 +1,75 @@
+/* Tutorial de primeiro acesso: destaca um elemento por vez e escurece o resto. */
+
+.cabecalho-acoes { display: flex; align-items: center; gap: 20px; }
+
+.tour-camada { position: fixed; inset: 0; z-index: 1000; }
+.tour-camada[hidden] { display: none; }
+
+.tour-recorte {
+  position: absolute;
+  border-radius: 6px;
+  box-shadow:
+    0 0 0 2px #002A50,
+    0 0 0 4px rgba(255, 255, 255, .92),
+    0 0 0 9999px rgba(8, 20, 36, .62);
+  pointer-events: none;
+  transition:
+    top .3s cubic-bezier(.2, .7, .2, 1),
+    left .3s cubic-bezier(.2, .7, .2, 1),
+    width .3s cubic-bezier(.2, .7, .2, 1),
+    height .3s cubic-bezier(.2, .7, .2, 1);
+}
+.tour-recorte.tour-recorte-vazio { box-shadow: 0 0 0 9999px rgba(8, 20, 36, .62); }
+
+.tour-caixa {
+  position: absolute;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 20px 20px 16px;
+  background: #fff;
+  color: #1d1b17;
+  border: 1px solid #e3dfd5;
+  border-radius: 6px;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  transition: top .3s cubic-bezier(.2, .7, .2, 1), left .3s cubic-bezier(.2, .7, .2, 1);
+}
+.tour-caixa:focus { outline: none; }
+
+.tour-sem-transicao { transition: none !important; }
+
+.tour-indicador {
+  margin: 0 0 6px;
+  font-size: 12px;
+  letter-spacing: .04em;
+  color: #5c5850;
+  font-variant-numeric: tabular-nums;
+}
+.tour-titulo { margin: 0 0 6px; font-size: 16px; font-weight: 600; color: #002A50; }
+.tour-texto { margin: 0 0 18px; font-size: 14px; line-height: 1.5; color: #2b2925; }
+
+.tour-acoes { display: flex; align-items: center; gap: 8px; }
+.tour-espaco { flex: 1; }
+.tour-acoes button {
+  font: inherit;
+  font-size: 14px;
+  border-radius: 4px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.tour-pular {
+  background: none;
+  border: 0;
+  padding: 8px 4px !important;
+  color: #5c5850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.tour-voltar { background: #fff; border: 1px solid #cfc9bc; color: #1d1b17; }
+.tour-voltar:disabled { color: #8a857b; border-color: #e3dfd5; cursor: default; }
+.tour-proximo { background: #002A50; border: 1px solid #002A50; color: #fff; font-weight: 500; }
+.tour-proximo:hover { background: #0b3a66; }
+.tour-acoes button:focus-visible { outline: 2px solid #002A50; outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-recorte, .tour-caixa { transition: none; }
+}
