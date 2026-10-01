@@ -42,11 +42,18 @@ def escolher_obra(obras: Sequence[Obra], obra_id: int | None = None) -> Obra | N
     return obras[0] if len(obras) == 1 else None
 
 
-def item_alvo(itens: Sequence[ItemContrato]) -> ItemContrato | None:
-    """Item mais recente: com aditivo e de maior referência. Critério a confirmar com a área."""
+def item_alvo(itens: Sequence[ItemContrato], valor: Decimal | None = None) -> ItemContrato | None:
+    """Item que recebe o valor: o que ainda tem saldo para ele.
+
+    Se mais de um tiver saldo, usa o mais recente (com aditivo, depois maior referência).
+    Se nenhum tiver saldo, devolve o mais recente para a V9 avisar. Desempate a confirmar com a área.
+    """
     if not itens:
         return None
-    return max(itens, key=lambda item: (item.tem_aditivo, item.referencia))
+    com_saldo = [item for item in itens if saldo_item(item) > 0]
+    if valor is not None:
+        com_saldo = [item for item in com_saldo if saldo_item(item) >= valor] or com_saldo
+    return max(com_saldo or itens, key=lambda item: (item.tem_aditivo, item.referencia))
 
 
 def saldo_item(item: ItemContrato) -> Decimal:

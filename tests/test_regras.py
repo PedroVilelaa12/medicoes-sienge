@@ -116,6 +116,24 @@ def test_item_mais_recente_prefere_o_aditivo():
     assert preenchimento.item_alvo(itens).id == 2
 
 
+def test_item_alvo_e_o_que_ainda_tem_saldo():
+    base = dict(descricao="x", quantidade_contratada=D("500"), preco_unitario=D("1"))
+    itens = [
+        ItemContrato(1, "00.000.000.001", tem_aditivo=False, quantidade_acumulada=D("100"), **base),
+        ItemContrato(2, "00.000.000.002", tem_aditivo=True, quantidade_acumulada=D("500"), **base),
+    ]
+    assert preenchimento.item_alvo(itens).id == 1  # o mais recente está sem saldo
+
+
+def test_item_alvo_prefere_o_item_cujo_saldo_comporta_o_valor():
+    base = dict(descricao="x", preco_unitario=D("1"))
+    itens = [
+        ItemContrato(1, "00.000.000.001", tem_aditivo=False, quantidade_contratada=D("3042.36"), quantidade_acumulada=D("2788.83"), **base),
+        ItemContrato(2, "00.000.000.002", tem_aditivo=True, quantidade_contratada=D("3000.00"), quantidade_acumulada=D("2900.00"), **base),
+    ]
+    assert preenchimento.item_alvo(itens, D("200.00")).id == 1  # só o 001 (saldo 253,53) comporta 200,00
+
+
 def test_duplicidade_dentro_do_lote():
     mesmo = anexo("nf.pdf", "NF", "igual")
     alertas = validar_lote([

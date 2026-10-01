@@ -81,12 +81,14 @@
     return porNome.length === 1 ? porNome[0] : null;
   }
 
-  // Item que recebe o valor: o mais recente do contrato (aditivo primeiro, depois a maior referência).
+  // Item que recebe o valor: o que ainda tem saldo; havendo mais de um, o mais recente (aditivo primeiro, depois a maior referência).
   function itemAlvo(contrato) {
-    return contrato.itens.slice().sort(function (a, b) {
+    var ordenados = contrato.itens.slice().sort(function (a, b) {
       if (a.aditivo !== b.aditivo) return a.aditivo ? -1 : 1;
       return a.ref < b.ref ? 1 : -1;
-    })[0];
+    });
+    var comSaldo = ordenados.filter(function (item) { return saldo(item) > 0; });
+    return (comSaldo.length ? comSaldo : ordenados)[0];
   }
 
   function saldo(item) { return item.contratado - item.acumulado; }
@@ -431,7 +433,7 @@
       if (av.item) {
         campos.push('<div class="campo"><span class="rotulo">Item que recebe o valor ' + auto + '</span><div class="automatico">' +
           esc(av.item.descricao) + (av.item.aditivo ? " · aditivo" : "") + ' · saldo <span class="numero">' + moeda(saldo(av.item)) +
-          '</span><span class="sub">Ref. ' + esc(av.item.ref) + " · item mais recente do contrato</span></div></div>");
+          '</span><span class="sub">Ref. ' + esc(av.item.ref) + " · item que ainda tem saldo</span></div></div>");
       }
     }
 

@@ -192,7 +192,7 @@ def v9_sem_saldo(saldo: Decimal) -> list[Alerta]:
         return []
     return [Alerta(
         "V9", ATENCAO,
-        "O item mais recente do contrato não tem saldo. Confira com o responsável pelo contrato qual item deve receber a medição.",
+        "Nenhum item do contrato tem saldo. Confira com o responsável pelo contrato qual item deve receber a medição.",
     )]
 
 
@@ -344,7 +344,7 @@ def validar(
 
     dados = None
     if obra is not None and unidade is not None:
-        item = preenchimento.item_alvo(contexto.itens)
+        item = preenchimento.item_alvo(contexto.itens, pedido.valor)
         if item is None:
             alertas.append(Alerta(
                 "V13", BLOQUEIA,

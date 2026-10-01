@@ -322,7 +322,7 @@ Qualquer passo de escrita pode falhar, e a retomada continua do passo que falhou
 | Vencimento | Ferramenta | Hoje + 15 dias corridos, sem ajuste para fim de semana ou feriado | DECIDIDO (o ajuste está EM ABERTO) |
 | Observação | Usuária | Pré-preenchida "Referente aos serviços prestados pelo {fornecedor} - {Mês}/{AAAA}", editável. Pode vir do parâmetro 843 | DECIDIDO (o texto final está EM ABERTO) |
 | Desautorizada (`makeUnauthorized`) | Ferramenta | `true` por padrão | ASSUMIDO |
-| Item que recebe o valor | Ferramenta | Item mais recente: o do aditivo mais recente; empate → maior referência (`wbsCode`). Critério isolado e configurável | DECIDIDO (o critério exato está EM ABERTO) |
+| Item que recebe o valor | Ferramenta | Em ordem: **(1)** só entram itens cujo saldo comporte o valor inteiro, senão o Sienge recusa; **(2)** entre eles, o mesmo item da última medição do contrato, por continuidade, que é o que ela faz hoje [roadmap]; **(3)** se não houver, o mais recente (com aditivo, depois maior referência); **(4)** se nenhum comportar, não divide sozinho: avisa, e ela decide. A tela mostra por que o item foi escolhido e permite trocar. A regra é validada no dry-run das 20 medições antigas | DECIDIDO (1, 3 e 4 implementados; o desempate e a divisão entre itens estão EM ABERTO) |
 | Quantidade | Ferramenta | `valor ÷ preço unitário`, 4 casas; mostra o valor efetivo | VERIFICADO |
 | Valor | Usuária | Maior que zero e até o saldo do item | DECIDIDO |
 | Saldo do item | Ferramenta | `(quantidade contratada − acumulado medido) × preço unitário` | DECIDIDO |
@@ -350,7 +350,7 @@ Cada validação gera uma mensagem **na linguagem da usuária**, com o motivo e 
 | V6 | Existem medições posteriores liberadas | Antes de confirmar | Bloqueia | "Há uma medição com data posterior já liberada. O Sienge não aceita uma nova antes dela." |
 | V7 | Hoje ≥ data da última medição | Antes de confirmar | Bloqueia | "A última medição é de 05/10, depois de hoje. Confira as datas." |
 | V8 | Valor maior que zero e até o saldo do item | Ao digitar | Bloqueia | "Valor acima do saldo do item (R$ 288,74)." |
-| V9 | Item-alvo sem saldo | Ao escolher o contrato | Atenção | "O item mais recente não tem saldo. Confira o contrato antes de lançar." |
+| V9 | Nenhum item com saldo | Ao escolher o contrato | Atenção | "Nenhum item do contrato tem saldo. Confira o contrato antes de lançar." |
 | V10 | Duplicidade no lote (mesmo arquivo ou mesmo contrato) | Ao montar o lote | Atenção | "Este boleto já está em outra medição deste lote." |
 | V11 | Medição sem anexo | Antes de confirmar | Atenção | "Esta medição não tem nenhum documento anexado." |
 | V12 | Total líquido diferente do valor lançado | Depois de lançar | Atenção, com a diferença | "O Sienge calculou R$ 251,43 líquidos (R$ 13,23 a menos). Provável retenção de imposto." |
@@ -520,7 +520,7 @@ Cada **campo** tenta primeiro a camada mais barata. Ele só desce para a próxim
 | 2 | A avaliação pode passar para a liberação (parâmetro 298) ou deixar de ser obrigatória (131)? | Define se sobra um passo manual por medição | Passo guiado com link |
 | 3 | Tudo bem a medição aparecer no Sienge com o usuário de API como responsável? | Rastreabilidade e cultura | Auditoria própria registra quem lançou |
 | 4 | A medição deve nascer desautorizada? Quem autoriza hoje? | Segregação de funções | `makeUnauthorized = true` |
-| 5 | Qual é o critério exato de "item mais recente"? E o que fazer se ele não tiver saldo? | Escolha do item que recebe o valor | Aditivo mais recente; sem saldo → alerta |
+| 5 | Se mais de um item tiver saldo, qual recebe o valor? E se nenhum sozinho comportar o valor, pode dividir entre itens? (A API aceita vários itens no mesmo POST) | Escolha do item que recebe o valor | O item com saldo; empate → o mais recente; nenhum comporta → bloqueia (V8) |
 | 6 | Anexo é obrigatório para lançar? | V11 bloqueia ou só alerta | Só alerta |
 | 7 | Vencimento em fim de semana ou feriado: mantém ou ajusta? | Regra de data | Mantém |
 | 8 | Qual o texto padrão da observação? (Existe o parâmetro 843) | Pré-preenchimento | Modelo editável |
