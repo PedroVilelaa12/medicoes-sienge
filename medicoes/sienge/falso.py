@@ -54,7 +54,7 @@ def dados_ficticios():
         ],
     }
     medicoes = {
-        "CT/1241": [MedicaoSienge(24, 480, date(2026, 9, 15), D("261.53"), D("261.53"))],
+        "CT/1241": [MedicaoSienge(24, 480, date(2026, 9, 15), D("261.53"), D("261.53"), itens_medidos=(2,))],
         "CT/154": [MedicaoSienge(9, 56, date(2026, 9, 5), D("2000.00"), D("2000.00"))],
         "CT/2088": [MedicaoSienge(5, 312, date(2026, 9, 10), D("10000.00"), D("9500.00"))],
     }

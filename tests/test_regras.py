@@ -148,3 +148,21 @@ def test_nome_de_anexo_longo_e_encurtado_preservando_extensao():
     nome = "a" * 120 + ".pdf"
     encurtado = preenchimento.nome_para_envio(nome, 100)
     assert len(encurtado) == 100 and encurtado.endswith(".pdf")
+
+
+def test_item_alvo_mantem_o_item_da_ultima_medicao():
+    base = dict(descricao="x", quantidade_contratada=D("500"), quantidade_acumulada=D("0"), preco_unitario=D("1"))
+    itens = [
+        ItemContrato(1, "00.000.000.001", tem_aditivo=False, **base),
+        ItemContrato(2, "00.000.000.002", tem_aditivo=True, **base),
+    ]
+    assert preenchimento.item_alvo(itens, D("100"), item_anterior=1).id == 1  # continuidade vence "mais recente"
+
+
+def test_continuidade_so_vale_se_o_item_anterior_comporta_o_valor():
+    base = dict(descricao="x", quantidade_contratada=D("500"), preco_unitario=D("1"))
+    itens = [
+        ItemContrato(1, "00.000.000.001", tem_aditivo=False, quantidade_acumulada=D("450"), **base),
+        ItemContrato(2, "00.000.000.002", tem_aditivo=True, quantidade_acumulada=D("0"), **base),
+    ]
+    assert preenchimento.item_alvo(itens, D("100"), item_anterior=1).id == 2  # o 001 só tem 50 de saldo

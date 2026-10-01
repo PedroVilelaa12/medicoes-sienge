@@ -81,14 +81,15 @@
     return porNome.length === 1 ? porNome[0] : null;
   }
 
-  // Item que recebe o valor: o que ainda tem saldo; havendo mais de um, o mais recente (aditivo primeiro, depois a maior referência).
+  // Item que recebe o valor: só itens com saldo; prefere o da última medição (continuidade); senão, o mais recente (aditivo, depois maior referência).
   function itemAlvo(contrato) {
     var ordenados = contrato.itens.slice().sort(function (a, b) {
       if (a.aditivo !== b.aditivo) return a.aditivo ? -1 : 1;
       return a.ref < b.ref ? 1 : -1;
     });
     var comSaldo = ordenados.filter(function (item) { return saldo(item) > 0; });
-    return (comSaldo.length ? comSaldo : ordenados)[0];
+    var anterior = comSaldo.filter(function (item) { return item.ref === contrato.ultimoItem; })[0];
+    return anterior || (comSaldo.length ? comSaldo : ordenados)[0];
   }
 
   function saldo(item) { return item.contratado - item.acumulado; }

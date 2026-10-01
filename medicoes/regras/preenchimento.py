@@ -42,17 +42,24 @@ def escolher_obra(obras: Sequence[Obra], obra_id: int | None = None) -> Obra | N
     return obras[0] if len(obras) == 1 else None
 
 
-def item_alvo(itens: Sequence[ItemContrato], valor: Decimal | None = None) -> ItemContrato | None:
-    """Item que recebe o valor: o que ainda tem saldo para ele.
+def item_alvo(
+    itens: Sequence[ItemContrato], valor: Decimal | None = None, item_anterior: int | None = None
+) -> ItemContrato | None:
+    """Item que recebe o valor, nesta ordem:
 
-    Se mais de um tiver saldo, usa o mais recente (com aditivo, depois maior referência).
-    Se nenhum tiver saldo, devolve o mais recente para a V9 avisar. Desempate a confirmar com a área.
+    1. só entram itens com saldo que comporte o valor;
+    2. o mesmo item da última medição do contrato (continuidade);
+    3. senão, o mais recente (com aditivo, depois maior referência).
+    Sem item com saldo, devolve o mais recente para a V9 avisar. Desempate a confirmar com a área.
     """
     if not itens:
         return None
     com_saldo = [item for item in itens if saldo_item(item) > 0]
     if valor is not None:
         com_saldo = [item for item in com_saldo if saldo_item(item) >= valor] or com_saldo
+    for item in com_saldo:
+        if item.id == item_anterior:
+            return item
     return max(com_saldo or itens, key=lambda item: (item.tem_aditivo, item.referencia))
 
 

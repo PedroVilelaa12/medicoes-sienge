@@ -94,6 +94,7 @@ class MedicaoSienge:
     liberada: bool = True
     consistente: bool = True
     autorizada: bool = False
+    itens_medidos: tuple[int, ...] = ()  # ids dos itens medidos (GET /supply-contracts/measurements/items)
 
 
 @dataclass(frozen=True)

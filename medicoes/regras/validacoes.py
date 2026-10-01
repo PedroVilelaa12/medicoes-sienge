@@ -344,7 +344,9 @@ def validar(
 
     dados = None
     if obra is not None and unidade is not None:
-        item = preenchimento.item_alvo(contexto.itens, pedido.valor)
+        ultima = max(medicoes, key=lambda m: (m.data, m.numero), default=None)
+        anterior = ultima.itens_medidos[0] if ultima and ultima.itens_medidos else None
+        item = preenchimento.item_alvo(contexto.itens, pedido.valor, anterior)
         if item is None:
             alertas.append(Alerta(
                 "V13", BLOQUEIA,
