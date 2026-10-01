@@ -53,6 +53,9 @@ class Armazem:
     def obter(self, pedido_id: str) -> EstadoMedicao | None:
         return self._estados.get(pedido_id)
 
+    def por_chave(self, chave: str) -> EstadoMedicao | None:
+        return next((e for e in self._estados.values() if e.chave == chave), None)
+
     def salvar(self, estado: EstadoMedicao) -> None:
         self._estados[estado.pedido_id] = estado
         if self.caminho is None:

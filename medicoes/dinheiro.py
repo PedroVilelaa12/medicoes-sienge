@@ -1,5 +1,6 @@
 """Dinheiro sempre em Decimal, nunca em float. Formato brasileiro na entrada e na saída."""
 
+import re
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from typing import NamedTuple
 
@@ -12,8 +13,14 @@ def centavos(valor: Decimal) -> Decimal:
 
 
 def ler_valor_br(texto: str) -> Decimal:
-    """'3.042,36' -> Decimal('3042.36'). Ponto separa milhar; vírgula, decimais."""
+    """'3.042,36' -> Decimal('3042.36'). Ponto separa milhar; vírgula, decimais.
+
+    '264.66' é recusado: ponto seguido de 1 ou 2 dígitos no fim parece centavos e, lido como
+    milhar, viraria R$ 26.466,00. Em dinheiro, melhor recusar do que lançar 100 vezes o valor.
+    """
     limpo = texto.replace("R$", "").replace("\xa0", "").replace(" ", "").strip()
+    if "," not in limpo and re.search(r"\.\d{1,2}$", limpo):
+        raise ValueError(f"Valor ambíguo: {texto!r}. Use vírgula para os centavos, como em 264,66.")
     limpo = limpo.replace(".", "").replace(",", ".")
     try:
         return centavos(Decimal(limpo))

@@ -1,7 +1,8 @@
+from dataclasses import replace
 from datetime import date
 from decimal import Decimal as D
 
-from apoio import pedido, relogio_fixo
+from apoio import anexo, pedido, relogio_fixo
 
 from medicoes.config import Config
 from medicoes.dominio import MedicaoSienge, Status
@@ -112,3 +113,17 @@ def test_retomada_funciona_entre_execucoes_diferentes(tmp_path):
     )
     assert e.status is Status.LANCADA
     assert novo_cliente.anexos[("CT/1241", 25)] == [("nf.pdf", "NF"), ("boleto.pdf", "BOLETO")]
+
+
+def test_mesma_medicao_em_outro_pedido_nao_e_lancada_de_novo(orquestrador, cliente):
+    docs = [anexo("nf.pdf", "NF", "m1"), anexo("boleto.pdf", "BOLETO", "m1")]
+    orquestrador.processar_lote([pedido("m1", "CT/154", "2000.00", anexos=docs)], executar=True)
+    # Camadas anteriores (V14: anterior não finalizada; V5: medição no mês) já barram a duplicata.
+    # Aqui elas são superadas de propósito, para provar que a chave de idempotência segura sozinha.
+    cliente.medicoes["CT/154"][-1] = replace(cliente.medicoes["CT/154"][-1], finalizada=True)
+    [e] = orquestrador.processar_lote(
+        [pedido("m2", "CT/154", "2000.00", anexos=docs, confirmacoes=frozenset({"V5"}))], executar=True
+    )
+    assert e.status is Status.FALHOU
+    assert any("já ter sido lançada" in a.mensagem for a in e.alertas)
+    assert len(posts_de_medicao(cliente)) == 1

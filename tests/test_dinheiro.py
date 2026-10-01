@@ -15,6 +15,12 @@ def test_recusa_valor_invalido():
         ler_valor_br("duzentos")
 
 
+def test_recusa_ponto_como_centavos_para_nao_lancar_100_vezes_o_valor():
+    with pytest.raises(ValueError, match="vírgula"):
+        ler_valor_br("264.66")  # lido como milhar, viraria R$ 26.466,00
+    assert ler_valor_br("1.500") == D("1500.00")  # ponto com 3 dígitos é milhar
+
+
 def test_formata_em_reais():
     assert formatar_br(D("3042.36")) == "R$ 3.042,36"
     assert formatar_br(D("288.74")) == "R$ 288,74"

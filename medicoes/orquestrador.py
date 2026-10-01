@@ -234,6 +234,13 @@ class Orquestrador:
             data_medicao=dados.data_medicao.isoformat(),
             valor_efetivo=str(dados.conversao.valor_efetivo),
         )
+        anterior = self.armazem.por_chave(estado.chave)
+        if anterior is not None and anterior.pedido_id != pedido.id and anterior.etapa is not Etapa.CONFIRMADA:
+            numero = f"nº {anterior.numero_sienge}" if anterior.numero_sienge else "sem número confirmado"
+            raise Imprevisto(
+                f"Esta medição parece já ter sido lançada ({numero}): mesmo contrato, obra, data, valor e "
+                "documentos. Confira no Sienge antes de lançar de novo."
+            )
         self._salvar(estado, "confirmação", "ok", f"chave {estado.chave}")
         return estado
 
