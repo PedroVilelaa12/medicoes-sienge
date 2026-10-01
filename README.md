@@ -39,7 +39,7 @@ O que não está no documento de contexto, mas está na documentação oficial d
 Requisito: [`uv`](https://docs.astral.sh/uv/). O Python 3.12 é instalado automaticamente.
 
 ```bash
-uv run --python 3.12 pytest -q                                        # 37 testes
+uv run --python 3.12 pytest -q                                        # 41 testes
 uv run --python 3.12 medicoes lancar exemplos/lote.json               # simulação: mostra o que SERIA lançado
 uv run --python 3.12 medicoes lancar exemplos/lote.json --executar --falhar-em anexos   # lança no Sienge simulado; o envio do boleto falha
 uv run --python 3.12 medicoes lancar exemplos/lote.json --executar    # retoma de onde parou, sem criar outra medição
@@ -59,6 +59,7 @@ medicoes/        núcleo em Python (só biblioteca padrão)
   dominio.py       modelos, status, alertas
   regras/          preenchimento e validações V1–V19 (funções puras, sem rede)
   sienge/          interface do cliente (uma função por rota verificada) e Sienge simulado
+  leitura/         linha digitável do boleto (regra, sem IA)
   orquestrador.py  passos, idempotência, reconciliação de timeout, retomada
   estado.py        estado do lote em arquivo (SQLite no roadmap)
   cli.py           medicoes lancar lote.json [--executar]
@@ -76,12 +77,13 @@ interface/       protótipo da tela de lote (HTML, CSS e JS, sem build)
   - o valor "264.66" era lido como R$ 26.466,00;
   - a chave de idempotência era gravada, mas nunca consultada;
   - a CLI caía com traceback diante de um valor ilegível.
-- **37 testes automatizados passando**, cobrindo:
+- **41 testes automatizados passando**, cobrindo:
   - os critérios de aceite do contexto;
   - as validações V5, V6, V11, V12, V14 e V17 a V19;
   - a falha e a retomada entre execuções diferentes;
   - o timeout ambíguo na criação.
 - Protótipo da tela de lote, com a identidade visual do Grupo Baptista Leal: soltar documentos, juntar cards arrastando, revisar num modal (documento à esquerda, campos à direita, "por que este item"), lançar as prontas, uma falha com "Tentar de novo" sem duplicar, e comprovante com as pendências.
+- Leitura da linha digitável do boleto, sem IA (camada 1 da cascata, D14): valor e vencimento validados pelos dígitos verificadores do padrão FEBRABAN, inclusive a virada do fator de vencimento em 22/02/2025.
 - Tutorial de primeiro acesso no estilo de jogo, no próprio protótipo: destaca o elemento, escurece o resto e avança com "Próximo" ou "Pular".
 
 **Ainda não feito, e por quê**

@@ -26,6 +26,7 @@ open interface/index.html                                        # protótipo da
 |---|---|---|
 | `medicoes/regras/` | Calcular, preencher e validar com **funções puras** | Rede, disco, relógio do sistema (o relógio é injetado) |
 | `medicoes/sienge/` | Ser a **única porta** para o Sienge | Conter regra de negócio |
+| `medicoes/leitura/` | Extrair dados de documentos com regra determinística | Decidir ou chamar o Sienge; IA só como fallback (D14) |
 | `medicoes/orquestrador.py` | Ser a **única camada que escreve** no Sienge | Decidir sozinho uma situação ambígua |
 | `interface/` | Mostrar e coletar | Decidir. No produto, chama o serviço; as regras em JS existem só no protótipo |
 

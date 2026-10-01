@@ -481,6 +481,8 @@ Cada **campo** tenta primeiro a camada mais barata. Ele só desce para a próxim
 | 3. OCR local + as mesmas regras | Tesseract / OCRmyPDF, só para PDF escaneado (sem texto) | Zero (processamento local) | Idem |
 | 4. IA (LLM com visão) | Só os campos que sobraram, com saída estruturada | Centavos por documento; o dado sai da empresa | Se a IA também não passar na checagem, o campo fica **Vazio** e a usuária preenche |
 
+> **Já implementado:** a camada 1 para boleto bancário (`medicoes/leitura/boleto.py`), com valor e vencimento validados pelos dígitos verificadores, inclusive a virada do fator de vencimento em 22/02/2025, e com testes.
+
 **Regras da cascata:**
 - **O gatilho é a checagem, não "encontrei algo".** O Python também erra com confiança, por exemplo uma regex que pega o número errado da página. Um campo só vale quando passa na checagem cruzada; caso contrário, desce de camada.
 - **Por campo, não por documento.** Num boleto, valor e vencimento saem da linha digitável; a IA, se for chamada, lê só o que faltou.
