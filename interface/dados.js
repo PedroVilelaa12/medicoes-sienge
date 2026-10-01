@@ -18,7 +18,8 @@ var CONTRATOS = [
       { ref: "00.000.000.002", descricao: "Mensalidade de Software", aditivo: true,
         unidade: "R$", precoUnitario: 100, contratado: 320000, acumulado: 291126 }
     ],
-    ultimaMedicao: 25
+    ultimaMedicao: 25,
+    ultimoItem: "00.000.000.002" // continuidade: item da última medição
   },
   {
     numero: "CT/154",

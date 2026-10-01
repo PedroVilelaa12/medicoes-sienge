@@ -371,9 +371,13 @@ V1 a V13 vieram do contexto. **V14 a V19 surgiram da leitura da API.**
 
 **Fluxo:**
 1. **Soltar os documentos da semana.** Cada arquivo vira um card. **Arrastar um card para dentro de outro significa "estes documentos são da mesma medição"**, por exemplo o boleto e a NF do mesmo fornecedor. Também existe o botão "+ anexo", para quem não quiser arrastar.
-2. **Completar a lista.** São linhas, não uma grade de cards: com 15 itens, a lista se lê de cima para baixo. Ao abrir uma linha, o **PDF fica à esquerda e os campos à direita**, porque no MVP ela lê o valor no documento e digita. O botão "Próxima" vai para a próxima pendente sem fechar nada.
+2. **Revisar num modal grande.** Os cards são a única representação das medições na tela, e cada um mostra a sua situação. A lista foi tirada porque repetia os cards (D15).
+   - "Revisar e lançar", ou um clique no card, abre a revisão quase em tela cheia.
+   - **O documento fica à esquerda e os campos à direita**, porque no MVP ela lê o valor no documento e digita.
+   - "Anterior" e "Próxima" percorrem as medições sem fechar nada.
+   - Uma linha explica por que aquele item recebe o valor ("Mesmo item da última medição").
 3. **O que o sistema preencheu aparece diferente do que ela digitou.** Obra, item, saldo e vencimento são exibidos, mas não são campos para digitar.
-4. **"Lançar N prontas".** O botão não espera o lote inteiro.
+4. **"Lançar N prontas", no rodapé da revisão.** O botão não espera o lote inteiro.
    - Uma confirmação única mostra a quantidade e o total ("Você vai lançar 2 medições, total R$ 2.264,66").
    - Cada medição é lançada de forma independente: se uma falhar, as outras seguem, e a que falhou mostra o motivo e o botão "Tentar de novo", que retoma sem duplicar.
 5. **Comprovante:** o número de cada medição no Sienge e as pendências guiadas ("Falta a avaliação do fornecedor no Sienge", com link).
@@ -385,6 +389,8 @@ V1 a V13 vieram do contexto. **V14 a V19 surgiram da leitura da API.**
 
 ### 6.1 Tutorial de primeiro acesso [PLANEJADO]
 
+> **No protótipo:** uma versão leve já roda em `interface/tutorial.js`. Ela abre no primeiro acesso, mostra destaque, escurecimento e animação, e responde a teclado e ao "reduzir movimento". O que falta da especificação abaixo: salvar o estado no servidor, apagar o lote de exemplo ao terminar e o mini-tour de novidades.
+
 No primeiro acesso, a ferramenta faz um tour guiado no estilo de tutorial de jogo:
 - **O que está sendo explicado fica iluminado, e o resto da tela escurece.**
 - Uma caixa de texto ao lado do destaque explica o passo e traz **Próximo** e **Pular**.
@@ -394,7 +400,7 @@ No primeiro acesso, a ferramenta faz um tour guiado no estilo de tutorial de jog
 |---|---|---|
 | 1 | Área de soltar | "Comece soltando aqui os boletos e as notas fiscais da semana. Cada arquivo vira um card." |
 | 2 | Um card sendo arrastado para dentro de outro | "Boleto e nota do mesmo fornecedor? Arraste um card para dentro do outro: eles viram uma medição só." |
-| 3 | Uma linha da lista, aberta | "Abra cada medição: o documento fica à esquerda e os campos à direita. Você só informa contrato, valor e observação." |
+| 3 | Um card | "Clique num cartão para revisar: o documento fica à esquerda e os campos à direita. Você só informa contrato, valor e observação." |
 | 4 | Campos preenchidos pelo sistema | "O que aparece com este fundo o sistema já preencheu: obra, item, saldo e vencimento. Confira, mas não precisa digitar." |
 | 5 | Chip de status | "O status mostra o que falta. Só as medições prontas podem ser lançadas." |
 | 6 | Botão "Lançar N prontas" | "Quando quiser, lance as prontas. Você confirma o total antes, e nada é gravado sem isso." |
@@ -437,6 +443,7 @@ Esforço estimado: 1 a 2 dias, com a tela de lote já estável.
 | D12 | Protótipo da tela em HTML, CSS e JS sem build | Abre com duplo clique, sem instalação; foco no fluxo, não no framework | React (mais pesado para um protótipo) · Streamlit (não faz bem arrastar um card para dentro de outro) |
 | D13 | IA fora do lançamento | Valor financeiro: IA para **ler** (fase 2), regra para **decidir**, pessoa para **aprovar** | IA escolhendo item, valor ou chamando a API |
 | D14 | Leitura de documentos em cascata: Python primeiro e IA só como fallback, campo a campo, com o gatilho na checagem (§8.2) | Menor custo e tempo; previsível e auditável; menos dado saindo da empresa | **IA para tudo** (custo, LGPD, erro confiante) · **só Python** (quebra com layouts variados e documentos escaneados) |
+| D15 | Só cards na tela; revisão num modal quase em tela cheia | A lista repetia os cards. A revisão é onde ela passa mais tempo, então ganha quase a tela toda, com o documento ao lado dos campos | **Lista de linhas** (proposta do contexto) · **cards + lista** (1ª versão do protótipo, que repetia a informação) |
 
 ---
 

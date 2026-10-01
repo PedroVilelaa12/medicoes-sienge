@@ -78,13 +78,14 @@ interface/       protótipo da tela de lote (HTML, CSS e JS, sem build)
   - as validações V5, V6, V11, V12, V14 e V17 a V19;
   - a falha e a retomada entre execuções diferentes;
   - o timeout ambíguo na criação.
-- Protótipo da tela de lote, com a identidade visual do Grupo Baptista Leal: soltar documentos, juntar cards arrastando, completar, lançar as prontas, uma falha com "Tentar de novo" sem duplicar, e comprovante com as pendências.
+- Protótipo da tela de lote, com a identidade visual do Grupo Baptista Leal: soltar documentos, juntar cards arrastando, revisar num modal (documento à esquerda, campos à direita, "por que este item"), lançar as prontas, uma falha com "Tentar de novo" sem duplicar, e comprovante com as pendências.
+- Tutorial de primeiro acesso no estilo de jogo, no próprio protótipo: destaca o elemento, escurece o resto e avança com "Próximo" ou "Pular".
 
 **Ainda não feito, e por quê**
 - **Cliente HTTP real testado contra uma API.** Não havia API simulada nem credencial disponíveis. As rotas estão mapeadas e documentadas, e só esse módulo muda quando houver acesso.
 - **Serviço web ligando a tela ao núcleo.** No protótipo, a tela replica as regras em JavaScript só para demonstrar o fluxo.
 - **Banco SQLite, login corporativo e auditoria persistente.** Estão no roadmap (semana 2).
-- **Tutorial de primeiro acesso**, no estilo de jogo: destaca o elemento, escurece o resto e avança com "Próximo" ou "Pular". Está especificado no [PLANEJAMENTO §6.1](docs/PLANEJAMENTO.md#61-tutorial-de-primeiro-acesso-planejado) e previsto para a semana 3.
+- **Tutorial completo de primeiro acesso.** A versão leve já roda no protótipo. Faltam salvar no servidor quem já viu o tutorial e o mini-tour de novidades ([PLANEJAMENTO §6.1](docs/PLANEJAMENTO.md#61-tutorial-de-primeiro-acesso-planejado)).
 - **Leitura automática dos documentos (OCR/IA).** É a fase 2. O estudo das opções e o plano de avaliação estão no [PLANEJAMENTO §8](docs/PLANEJAMENTO.md#8-fase-2--leitura-automática-dos-documentos-estudo).
 
 **Próximos passos:** responder às perguntas da área ([PLANEJAMENTO §10](docs/PLANEJAMENTO.md#10-perguntas-para-a-área-por-prioridade)), rodar em dry-run sobre 20 medições antigas e comparar com o lançamento manual.

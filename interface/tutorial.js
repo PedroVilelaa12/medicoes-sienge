@@ -7,15 +7,13 @@
     { alvo: "#soltar", titulo: "Solte os documentos",
       texto: "Comece soltando aqui os boletos e as notas fiscais da semana. Cada arquivo vira um cartão." },
     { alvo: "#cartoes", titulo: "Junte o que é da mesma medição",
-      texto: "Boleto e nota do mesmo fornecedor? Arraste um cartão para dentro do outro: eles viram uma medição só." },
-    { alvo: "#lista-bloco", titulo: "Confira e complete",
-      texto: "Abra cada medição: o documento fica à esquerda e os campos à direita. Você só informa contrato, valor e observação." },
-    { alvo: ".linha-cab", titulo: "Acompanhe a situação",
-      texto: "A situação mostra o que falta. Só as medições prontas podem ser lançadas." },
-    { alvo: "#lancar", alternativo: "#barra", titulo: "Lance as prontas",
-      texto: "Quando quiser, lance as prontas. Você confirma o total antes, e nada é gravado sem isso." },
+      texto: "Boleto e nota do mesmo fornecedor? Arraste um cartão para dentro do outro para juntar: eles viram uma medição só." },
+    { alvo: ".cartao", titulo: "Clique num cartão para revisar",
+      texto: "Cada cartão é uma medição, e a situação mostra o que falta. Clique no cartão para conferir e completar." },
+    { alvo: "#revisar", alternativo: "#barra", titulo: "Revisar e lançar",
+      texto: "Na revisão, o documento fica à esquerda e os campos à direita. Você só informa contrato, valor e observação, e lança as prontas de lá." },
     { alvo: null, titulo: "Pronto!",
-      texto: "Depois de lançar, o comprovante mostra o número de cada medição e o que ainda falta no Sienge." }
+      texto: "Você confirma o total antes de lançar, e nada é gravado sem isso. Depois, o comprovante mostra o número de cada medição e o que ainda falta no Sienge." }
   ];
   var FOLGA = 8;
   var MARGEM = 16;
@@ -192,7 +190,7 @@
   function iniciar() {
     if (ativo) { return; }
     // Sem lote, carrega o exemplo para os passos terem o que mostrar.
-    if (!document.querySelector(".linha-cab")) {
+    if (!document.querySelector(".cartao")) {
       var exemplo = document.getElementById("exemplo");
       if (exemplo) { exemplo.click(); }
     }

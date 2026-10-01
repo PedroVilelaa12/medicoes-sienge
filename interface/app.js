@@ -94,6 +94,16 @@
 
   function saldo(item) { return item.contratado - item.acumulado; }
 
+  // Explica à usuária por que o sistema escolheu este item.
+  function porQueItem(c, item, centavos) {
+    if (c.ultimoItem && item.ref === c.ultimoItem && saldo(item) > 0) return "Mesmo item da última medição";
+    var cabem = c.itens.filter(function (i) {
+      return saldo(i) > 0 && (centavos == null || isNaN(centavos) || saldo(i) >= centavos);
+    });
+    if (cabem.length === 1 && cabem[0] === item) return "Único item com saldo para este valor";
+    return "Item mais recente com saldo";
+  }
+
   // O Sienge recebe quantidade com 4 casas (quantidade = valor ÷ preço unitário).
   function valorEfetivo(centavos, precoUnitario) {
     var quantidade = Math.round((centavos / precoUnitario) * 10000) / 10000;
@@ -213,6 +223,7 @@
   function situacaoDe(m, av) {
     var s = SITUACOES[av.codigo];
     if (av.codigo === "falhou") return { rotulo: "Falhou em: " + PASSOS[m.lancamento.passo], classe: s.classe };
+    if (av.codigo === "lancada") return { rotulo: "Lançada nº " + m.lancamento.numero, classe: s.classe };
     return s;
   }
 
@@ -320,9 +331,9 @@
 
   function renderTudo() {
     renderCartoes();
-    renderLista();
     renderBarra();
     renderComprovante();
+    renderRevisao();
   }
 
   function renderCartoes() {
@@ -330,57 +341,47 @@
     ul.innerHTML = estado.medicoes.map(function (m) {
       var c = m.contrato ? contratoPorNumero(m.contrato) : null;
       var travado = !!m.lancamento;
+      var av = avaliar(m);
+      var s = situacaoDe(m, av);
+      var centavos = paraCentavos(m.valor);
+      var temValor = centavos && !isNaN(centavos);
       return '<li class="cartao' + (travado ? " travado" : "") + '" data-id="' + m.id + '"' +
-        (travado ? "" : ' draggable="true" title="Arraste para dentro de outro cartão para juntar"') + ">" +
+        (travado ? "" : ' draggable="true" title="Clique para revisar. Arraste para dentro de outro cartão para juntar."') + ">" +
         '<div class="cartao-topo"><span class="cartao-contrato' + (c ? "" : " sem") + '">' +
         (c ? esc(c.numero) : "Sem contrato") + "</span></div>" +
         (c ? '<div class="cartao-fornecedor">' + esc(c.fornecedor) + "</div>" : "") +
+        '<div class="cartao-meio"><span class="cartao-valor' + (temValor ? "" : " vazio-valor") + '">' +
+        (temValor ? moeda(av.efetivo || centavos) : "R$ —") + "</span>" +
+        '<span class="situacao ' + s.classe + '">' + esc(s.rotulo) + "</span></div>" +
         '<ul class="cartao-docs">' + m.docs.map(function (d) {
           return '<li><span class="tipo">' + esc(d.tipo) + '</span><span class="nome">' + esc(d.nome) + "</span></li>";
         }).join("") + "</ul>" +
+        faixaCartao(m) +
         '<div class="cartao-rodape"><span class="cartao-contagem">' + m.docs.length +
-        (m.docs.length === 1 ? " documento" : " documentos") + "</span>" +
+        (m.docs.length === 1 ? " documento" : " documentos") + '</span><span class="cartao-acoes">' +
         (travado ? "" : '<button type="button" class="cartao-anexo" data-acao="anexo" data-id="' + m.id + '">+ anexo</button>') +
-        "</div></li>";
+        '<button type="button" class="cartao-revisar" data-acao="revisar" data-id="' + m.id + '">' + (travado ? "Ver" : "Revisar") + "</button>" +
+        "</span></div></li>";
     }).join("");
   }
 
-  function cabecalhoLinha(m) {
-    var av = avaliar(m);
-    var s = situacaoDe(m, av);
-    var c = m.contrato ? contratoPorNumero(m.contrato) : null;
-    var centavos = paraCentavos(m.valor);
-    var valor = centavos && !isNaN(centavos) ? moeda(av.efetivo || centavos) : "—";
-    return '<span class="linha-id"><span class="linha-contrato"><span class="seta" aria-hidden="true"></span>' +
-      (c ? esc(c.numero) : "Sem contrato") + '</span><span class="linha-fornecedor">' +
-      (c ? esc(c.fornecedor) : esc(m.docs[0] ? m.docs[0].nome : "")) + "</span></span>" +
-      '<span class="linha-valor' + (valor === "—" ? " vazio-valor" : "") + '">' + valor + "</span>" +
-      '<span class="linha-docs">' + m.docs.length + "</span>" +
-      '<span><span class="situacao ' + s.classe + '">' + esc(s.rotulo) + "</span></span>";
-  }
-
-  function faixaLinha(m) {
+  function faixaCartao(m) {
     var L = m.lancamento;
     if (!L) return "";
     if (L.estado === "lancando") {
-      var passos = PASSOS.map(function (p, i) {
-        var cls = i < L.passo ? "passo-feito" : (i === L.passo ? "passo-atual" : "");
-        return '<span class="' + cls + '">' + (i + 1) + ". " + esc(p) + (i === 2 && i === L.passo ?
-          " (" + L.anexosEnviados + " de " + m.docs.length + ")" : "") + "</span>";
-      }).join("");
-      var retomada = L.tentativas > 1 && L.numero ?
-        '<span>Medição nº ' + L.numero + " mantida — nenhuma medição nova foi criada.</span>" : "";
-      return '<div class="linha-faixa"><div class="passos">' + passos + "</div>" + retomada + "</div>";
+      return '<div class="cartao-faixa andamento"><span>' + (L.passo + 1) + " de " + PASSOS.length + " · " + esc(PASSOS[L.passo]) +
+        (L.passo === 2 ? " (" + L.anexosEnviados + " de " + m.docs.length + ")" : "") + "</span>" +
+        (L.tentativas > 1 && L.numero ? "<span>Medição nº " + L.numero + " mantida: nenhuma medição nova foi criada.</span>" : "") + "</div>";
     }
     if (L.estado === "falhou") {
-      var feito = L.numero ? " A medição nº " + L.numero + " já foi criada e " + L.anexosEnviados + " de " +
-        m.docs.length + " anexo(s) foram enviados. Ao tentar de novo, só o que falta será reenviado." : "";
-      return '<div class="linha-faixa falha"><span>' + esc(L.falha || "") + feito + "</span>" +
-        '<button type="button" class="botao botao-secundario botao-pequeno" data-acao="tentar" data-id="' + m.id +
-        '"' + (lancando ? " disabled" : "") + ">Tentar de novo</button></div>";
+      var feito = L.numero ? " A medição nº " + L.numero + " já foi criada; " + L.anexosEnviados + " de " + m.docs.length +
+        " anexo(s) enviados. Ao tentar de novo, só o que falta é reenviado." : "";
+      return '<div class="cartao-faixa falha"><span>' + esc(L.falha || "") + feito + "</span>" +
+        '<button type="button" class="botao botao-secundario botao-pequeno" data-acao="tentar" data-id="' + m.id + '"' +
+        (lancando ? " disabled" : "") + ">Tentar de novo</button></div>";
     }
-    return '<div class="linha-faixa sucesso"><span>Lançada no Sienge como medição nº ' + L.numero +
-      ". Total líquido conferido: " + moeda(L.total) + ". Falta a avaliação do fornecedor no Sienge.</span></div>";
+    return '<div class="cartao-faixa sucesso"><span>Total líquido conferido: ' + moeda(L.total) +
+      ". Falta a avaliação do fornecedor no Sienge.</span></div>";
   }
 
   function visualDocumento(m) {
@@ -434,7 +435,8 @@
       if (av.item) {
         campos.push('<div class="campo"><span class="rotulo">Item que recebe o valor ' + auto + '</span><div class="automatico">' +
           esc(av.item.descricao) + (av.item.aditivo ? " · aditivo" : "") + ' · saldo <span class="numero">' + moeda(saldo(av.item)) +
-          '</span><span class="sub">Ref. ' + esc(av.item.ref) + " · item que ainda tem saldo</span></div></div>");
+          '</span><span class="sub" id="porque-' + m.id + '">Ref. ' + esc(av.item.ref) + " · " +
+          esc(porQueItem(c, av.item, paraCentavos(m.valor))) + "</span></div></div>");
       }
     }
 
@@ -465,39 +467,50 @@
       "</div>");
 
     campos.push('<div class="mensagens" id="msg-' + m.id + '">' + mensagensHtml(m, av) + "</div>");
-    campos.push('<div class="detalhe-acoes"><button type="button" class="botao botao-secundario" data-acao="fechar">Fechar</button>' +
-      '<button type="button" class="botao botao-primario" data-acao="proxima" data-id="' + m.id + '">Próxima pendente</button></div>');
 
     return '<div class="linha-corpo" id="corpo-' + m.id + '">' + visualDocumento(m) +
       '<div class="campos">' + campos.join("") + "</div></div>";
   }
 
-  function renderLista() {
-    var lista = document.getElementById("lista");
-    lista.innerHTML = estado.medicoes.map(function (m) {
-      var aberta = estado.aberta === m.id;
-      return '<div class="linha' + (aberta ? " aberta" : "") + '" role="listitem" data-id="' + m.id + '">' +
-        '<button type="button" class="linha-cab" data-acao="alternar" data-id="' + m.id + '" aria-expanded="' + aberta +
-        '" aria-controls="corpo-' + m.id + '">' + cabecalhoLinha(m) + "</button>" +
-        '<div class="faixa" id="faixa-' + m.id + '">' + faixaLinha(m) + "</div>" +
-        (aberta ? corpoLinha(m) : "") + "</div>";
-    }).join("");
-    document.getElementById("vazio").hidden = estado.medicoes.length > 0;
+  function renderRevisao() {
+    var dialogo = document.getElementById("revisao");
+    if (!dialogo.open) return;
+    var m = achar(estado.aberta);
+    if (!m) { dialogo.close(); return; }
+    var av = avaliar(m);
+    var s = situacaoDe(m, av);
+    document.getElementById("revisao-posicao").textContent = "· " + (estado.medicoes.indexOf(m) + 1) + " de " + estado.medicoes.length;
+    document.getElementById("revisao-situacao").innerHTML = '<span class="situacao ' + s.classe + '">' + esc(s.rotulo) + "</span>";
+    document.getElementById("revisao-corpo").innerHTML = corpoLinha(m);
+    atualizarBotaoModal();
+  }
+
+  function atualizarBotaoModal() {
+    var p = prontas();
+    var botao = document.getElementById("modal-lancar");
+    botao.disabled = !p.length || lancando;
+    botao.textContent = p.length ? "Lançar " + p.length + (p.length === 1 ? " pronta" : " prontas") : "Lançar prontas";
   }
 
   // Atualiza só o que muda enquanto a usuária digita, sem perder o foco do campo.
-  function atualizarLinha(m) {
-    var linha = document.querySelector('.linha[data-id="' + m.id + '"]');
-    if (!linha) return;
-    linha.querySelector(".linha-cab").innerHTML = cabecalhoLinha(m);
-    linha.querySelector(".faixa").innerHTML = faixaLinha(m);
+  function atualizarRevisao(m) {
+    var av = avaliar(m);
     var msg = document.getElementById("msg-" + m.id);
-    if (msg) msg.innerHTML = mensagensHtml(m, avaliar(m));
+    if (msg) msg.innerHTML = mensagensHtml(m, av);
     var valor = document.getElementById("valor-" + m.id);
     if (valor) {
-      var av = avaliar(m);
       valor.classList.toggle("invalida", av.mensagens.some(function (x) { return x.tipo === "erro" && /valor|saldo|zero/i.test(x.titulo); }));
     }
+    if (estado.aberta === m.id) {
+      var s = situacaoDe(m, av);
+      document.getElementById("revisao-situacao").innerHTML = '<span class="situacao ' + s.classe + '">' + esc(s.rotulo) + "</span>";
+    }
+    var porque = document.getElementById("porque-" + m.id);
+    if (porque && av.item && av.contrato) {
+      porque.textContent = "Ref. " + av.item.ref + " · " + porQueItem(av.contrato, av.item, paraCentavos(m.valor));
+    }
+    renderCartoes();
+    atualizarBotaoModal();
   }
 
   function prontas() {
@@ -521,13 +534,14 @@
     if (contagem.lancada) partes.push(contagem.lancada + " lançada(s)");
 
     var info = p.length ? "<strong>" + p.length + (p.length === 1 ? " pronta" : " prontas") + "</strong> · total <strong>" +
-      moeda(totalDe(p)) + "</strong>" : "Nenhuma medição pronta ainda.";
+      moeda(totalDe(p)) + "</strong>" : (estado.medicoes.length ? "nenhuma pronta ainda" : "Nenhuma medição ainda.");
+    if (estado.medicoes.length) {
+      info = estado.medicoes.length + (estado.medicoes.length === 1 ? " medição" : " medições") + ' <span aria-hidden="true">·</span> ' + info;
+    }
     if (partes.length) info += ' <span aria-hidden="true">·</span> ' + partes.join(" · ");
     document.getElementById("barra-info").innerHTML = info;
 
-    var botao = document.getElementById("lancar");
-    botao.disabled = !p.length || lancando;
-    botao.textContent = p.length ? "Lançar " + p.length + (p.length === 1 ? " pronta" : " prontas") : "Lançar prontas";
+    document.getElementById("revisar").disabled = !estado.medicoes.length || lancando;
 
     var resumo = document.getElementById("resumo");
     resumo.textContent = estado.medicoes.length ?
@@ -573,6 +587,8 @@
 
   async function executar(lista) {
     lancando = true;
+    var revisao = document.getElementById("revisao");
+    if (revisao.open) revisao.close();
     estado.aberta = null;
     renderTudo();
     for (var i = 0; i < lista.length; i++) {
@@ -594,7 +610,7 @@
     L.estado = "lancando";
     L.falha = "";
     L.tentativas++;
-    var passo = function () { salvar(); atualizarLinha(m); renderCartoes(); renderBarra(); };
+    var passo = function () { salvar(); renderCartoes(); renderBarra(); };
 
     if (L.passo === 0) { passo(); await dormir(650); L.passo = 1; }
 
@@ -642,45 +658,44 @@
     return null;
   }
 
-  function abrir(id, focar) {
+  function abrirRevisao(id, focar) {
+    var m = achar(id);
+    if (!m) return;
     estado.aberta = id;
-    renderLista();
-    var linha = document.querySelector('.linha[data-id="' + id + '"]');
-    if (linha) {
-      linha.scrollIntoView({ block: "start", behavior: "smooth" });
-      if (focar) {
-        var m = achar(id);
-        var alvo = document.getElementById((m && m.contrato ? "valor-" : "contrato-") + id);
-        if (alvo) alvo.focus({ preventScroll: true });
-      }
+    var dialogo = document.getElementById("revisao");
+    if (!dialogo.open) dialogo.showModal();
+    renderRevisao();
+    if (focar) {
+      var alvo = document.getElementById((m.contrato ? "valor-" : "contrato-") + id);
+      if (alvo && !alvo.disabled) alvo.focus();
     }
+  }
+
+  function navegar(passo) {
+    var lista = estado.medicoes;
+    if (!lista.length) return;
+    var i = lista.indexOf(achar(estado.aberta));
+    abrirRevisao(lista[(i + passo + lista.length) % lista.length].id, true);
   }
 
   document.addEventListener("click", function (e) {
     var el = e.target.closest("[data-acao]");
     if (!el) {
       var cartao = e.target.closest(".cartao");
-      if (cartao) abrir(cartao.getAttribute("data-id"), true);
+      if (cartao) abrirRevisao(cartao.getAttribute("data-id"), true);
       return;
     }
     var id = el.getAttribute("data-id");
     var acao = el.getAttribute("data-acao");
-    if (acao === "alternar") {
-      estado.aberta = estado.aberta === id ? null : id;
-      renderLista();
-    } else if (acao === "fechar") {
-      var aberta = estado.aberta;
-      estado.aberta = null;
-      renderLista();
-      var cab = document.querySelector('.linha[data-id="' + aberta + '"] .linha-cab');
-      if (cab) cab.focus();
-    } else if (acao === "proxima") {
-      var prox = proximaPendente(id);
-      if (prox) abrir(prox.id, true);
-      else { estado.aberta = null; renderLista(); anunciar("Não há mais medições pendentes."); }
+    if (acao === "revisar") {
+      abrirRevisao(id, true);
+    } else if (acao === "fechar-revisao") {
+      document.getElementById("revisao").close();
+    } else if (acao === "anterior" || acao === "seguinte") {
+      navegar(acao === "anterior" ? -1 : 1);
     } else if (acao === "aba-doc") {
       achar(id).docAtivo = el.getAttribute("data-doc");
-      renderLista();
+      renderRevisao();
     } else if (acao === "separar") {
       separar(id, el.getAttribute("data-doc"));
     } else if (acao === "anexo") {
@@ -704,7 +719,7 @@
     else if (campo === "contrato") m.contratoTexto = e.target.value;
     else return;
     salvar();
-    atualizarLinha(m);
+    atualizarRevisao(m);
     renderBarra();
   });
 
@@ -727,17 +742,17 @@
       var centavos = paraCentavos(t.value);
       if (centavos && !isNaN(centavos)) { m.valor = numeroBR(centavos); t.value = m.valor; }
       salvar();
-      atualizarLinha(m);
+      atualizarRevisao(m);
       renderBarra();
     } else if (campo === "tipo") {
       m.docs.forEach(function (d) { if (d.id === t.getAttribute("data-doc")) d.tipo = t.value; });
       salvar();
       renderCartoes();
-      renderLista();
+      renderRevisao();
     } else if (t.hasAttribute("data-confirma")) {
       m.confirmado[t.getAttribute("data-confirma")] = t.checked;
       salvar();
-      atualizarLinha(m);
+      atualizarRevisao(m);
       renderBarra();
     }
   });
@@ -823,7 +838,17 @@
   document.body.appendChild(extra);
 
   document.getElementById("exemplo").addEventListener("click", carregarExemplo);
-  document.getElementById("lancar").addEventListener("click", abrirConfirmacao);
+  document.getElementById("revisar").addEventListener("click", function () {
+    var primeira = proximaPendente(null) || estado.medicoes[0];
+    if (primeira) abrirRevisao(primeira.id, true);
+  });
+  document.getElementById("modal-lancar").addEventListener("click", abrirConfirmacao);
+  document.getElementById("revisao").addEventListener("close", function () {
+    var id = estado.aberta;
+    estado.aberta = null;
+    var botao = document.querySelector('.cartao[data-id="' + id + '"] .cartao-revisar');
+    if (botao) botao.focus();
+  });
   document.getElementById("imprimir").addEventListener("click", function () { window.print(); });
 
   document.getElementById("confirmar").addEventListener("close", function () {

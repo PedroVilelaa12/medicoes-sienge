@@ -39,7 +39,7 @@
         <span class="etapa-num" aria-hidden="true">1</span>
         <div>
           <h2 id="t-docs">Documentos</h2>
-          <p>Cada arquivo vira um cartão. Arraste um cartão para dentro de outro quando os documentos forem da mesma medição, como a nota e o boleto do mesmo fornecedor.</p>
+          <p>Cada arquivo vira um cartão. Arraste um cartão para dentro de outro quando os documentos forem da mesma medição, como a nota e o boleto do mesmo fornecedor. Clique num cartão para conferir e completar.</p>
         </div>
       </header>
 
@@ -60,30 +60,10 @@
       <ul class="cartoes" id="cartoes" aria-label="Documentos agrupados por medição"></ul>
     </section>
 
-    <section class="etapa" aria-labelledby="t-lista">
-      <header class="etapa-titulo">
-        <span class="etapa-num" aria-hidden="true">2</span>
-        <div>
-          <h2 id="t-lista">Conferir e completar</h2>
-          <p>Abra cada medição, leia o valor no documento e confira o que o sistema preencheu.</p>
-        </div>
-      </header>
-
-      <div class="lista" id="lista-bloco">
-        <div class="lista-cab" aria-hidden="true">
-          <span>Contrato e fornecedor</span>
-          <span class="dir">Valor</span>
-          <span class="centro">Docs</span>
-          <span>Situação</span>
-        </div>
-        <div id="lista" role="list"></div>
-        <p class="vazio" id="vazio">Nenhuma medição por enquanto. Solte os documentos acima ou carregue o exemplo.</p>
-      </div>
-    </section>
 
     <section class="etapa" id="comprovante" aria-labelledby="t-comprovante" hidden>
       <header class="etapa-titulo">
-        <span class="etapa-num" aria-hidden="true">3</span>
+        <span class="etapa-num" aria-hidden="true">2</span>
         <div>
           <h2 id="t-comprovante">Comprovante</h2>
           <p>Medições lançadas no Sienge hoje. A avaliação do fornecedor ainda é feita na tela do Sienge.</p>
@@ -97,9 +77,28 @@
   <div class="barra" id="barra">
     <div class="barra-conteudo">
       <p class="barra-info" id="barra-info">Nenhuma medição pronta ainda.</p>
-      <button type="button" class="botao botao-primario" id="lancar" disabled>Lançar prontas</button>
+      <button type="button" class="botao botao-primario" id="revisar" disabled>Revisar e lançar</button>
     </div>
   </div>
+
+  <dialog id="revisao" class="revisao" aria-labelledby="revisao-titulo">
+    <div class="revisao-cab">
+      <div class="revisao-titulo-bloco">
+        <h2 id="revisao-titulo">Revisar medições</h2>
+        <span class="revisao-posicao" id="revisao-posicao"></span>
+        <span id="revisao-situacao"></span>
+      </div>
+      <button type="button" class="revisao-fechar" data-acao="fechar-revisao" aria-label="Fechar a revisão">&times;</button>
+    </div>
+    <div class="revisao-corpo" id="revisao-corpo"></div>
+    <div class="revisao-rodape">
+      <div class="revisao-nav">
+        <button type="button" class="botao botao-secundario" data-acao="anterior">Anterior</button>
+        <button type="button" class="botao botao-secundario" data-acao="seguinte">Próxima</button>
+      </div>
+      <button type="button" class="botao botao-primario" id="modal-lancar" disabled>Lançar prontas</button>
+    </div>
+  </dialog>
 
   <dialog id="confirmar" aria-labelledby="confirmar-titulo">
     <form method="dialog" class="dialogo">
