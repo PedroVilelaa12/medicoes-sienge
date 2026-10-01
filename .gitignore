@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.medicoes/
+.env
+dist/
+*.egg-info/
+.DS_Store
+
+# cache local do plugin de design
+.impeccable/

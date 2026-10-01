@@ -1,0 +1,39 @@
+{
+  "lote": "Semana de 01/10/2026",
+  "medicoes": [
+    {
+      "id": "alfa-sistemas",
+      "contrato": "CT/1241",
+      "valor": "264,66",
+      "anexos": [
+        {"arquivo": "documentos/NF-ALFA-SISTEMAS-000915.pdf", "tipo": "NF"},
+        {"arquivo": "documentos/BOLETO-ALFA-SISTEMAS-000915.pdf", "tipo": "BOLETO"}
+      ]
+    },
+    {
+      "id": "metadados",
+      "contrato": "CT/154",
+      "valor": "2.000,00",
+      "observacao": "Referente aos serviços prestados pelo 1776 METADADOS - Setembro/2026",
+      "anexos": [
+        {"arquivo": "documentos/NF-1776-METADADOS-004471.pdf", "tipo": "NF"}
+      ]
+    },
+    {
+      "id": "pilar",
+      "contrato": "CT/2088",
+      "valor": "18.500,00",
+      "anexos": [
+        {"arquivo": "documentos/NF-CONSTRUTORA-PILAR-002210.pdf", "tipo": "NF"}
+      ]
+    },
+    {
+      "id": "locamaq",
+      "contrato": "CT/4102",
+      "valor": "264,66",
+      "anexos": [
+        {"arquivo": "documentos/BOLETO-LOCAMAQ-001001.pdf", "tipo": "BOLETO"}
+      ]
+    }
+  ]
+}
