@@ -358,6 +358,7 @@ Esforço estimado: 1 a 2 dias, com a tela de lote já estável.
 | D11 | Estado em JSON no protótipo, SQLite no produto | Retomada demonstrável hoje; banco transacional quando houver serviço | Banco desde o primeiro dia |
 | D12 | Protótipo da tela em HTML, CSS e JS sem build | Abre com duplo clique, sem instalação; foco no fluxo, não no framework | React (mais pesado para um protótipo) · Streamlit (não faz bem arrastar um card para dentro de outro) |
 | D13 | IA fora do lançamento | Valor financeiro: IA para **ler** (fase 2), regra para **decidir**, pessoa para **aprovar** | IA escolhendo item, valor ou chamando a API |
+| D14 | Leitura de documentos em cascata: Python primeiro e IA só como fallback, campo a campo, com o gatilho na checagem (§8.2) | Menor custo e tempo; previsível e auditável; menos dado saindo da empresa | **IA para tudo** (custo, LGPD, erro confiante) · **só Python** (quebra com layouts variados e documentos escaneados) |
 
 ---
 
@@ -384,7 +385,25 @@ Esforço estimado: 1 a 2 dias, com a tela de lote já estável.
 | **OCR gerenciado** (AWS Textract, Google Document AI, Azure Document Intelligence) | Modelos prontos de fatura e recibo | Custo por página; layouts brasileiros variam | Dados saem da empresa: exige contrato de tratamento e região adequada |
 | **LLM com visão e saída estruturada** | Layouts variados; classificar o tipo; ler competência e retenções | Pode errar com confiança; custo por documento | Provedor sem retenção para treino; enviar só o necessário |
 
-**Hipótese de arquitetura (a validar com dados):** primeiro a regra (linha digitável), depois o texto do PDF, depois o LLM, só para o que sobrar. Tudo passa por checagem cruzada.
+**Estratégia em cascata: Python primeiro, IA só como fallback [DECIDIDO; as proporções serão calibradas no benchmark]**
+
+Cada **campo** tenta primeiro a camada mais barata. Ele só desce para a próxima quando **não passa na checagem**.
+
+| Camada | Ferramenta | Custo | Quando desce para a próxima |
+|---|---|---|---|
+| 1. Dado estruturado | Linha digitável ou código de barras do boleto; XML ou consulta oficial da nota | Zero | Não há código legível, ou o dígito verificador falha |
+| 2. Python sobre o texto do PDF | `pdfplumber` + regras (CNPJ, valor, vencimento, competência) | Zero | Campo não encontrado, CNPJ com dígito inválido ou valor diferente do boleto |
+| 3. OCR local + as mesmas regras | Tesseract / OCRmyPDF, só para PDF escaneado (sem texto) | Zero (processamento local) | Idem |
+| 4. IA (LLM com visão) | Só os campos que sobraram, com saída estruturada | Centavos por documento; o dado sai da empresa | Se a IA também não passar na checagem, o campo fica **Vazio** e a usuária preenche |
+
+**Regras da cascata:**
+- **O gatilho é a checagem, não "encontrei algo".** O Python também erra com confiança, por exemplo uma regex que pega o número errado da página. Um campo só vale quando passa na checagem cruzada; caso contrário, desce de camada.
+- **Por campo, não por documento.** Num boleto, valor e vencimento saem da linha digitável; a IA, se for chamada, lê só o que faltou.
+- **A IA passa pelas mesmas checagens que o Python.** Ela não tem atalho para "Verificado".
+- **Cada campo guarda a sua origem** (linha digitável, texto, OCR ou IA), para auditar e medir quanto cada camada resolve.
+- **A IA ensina o Python.** Quando um fornecedor cai sempre na IA, o layout dele ganha uma regra dedicada, e o custo cai com o tempo.
+
+**Por que esta ordem:** é mais barato e mais rápido, mais previsível e auditável, e manda menos dado para fora da empresa (LGPD). O risco é o custo de manter regras por layout. O benchmark (§8.3) mede quanto cada camada resolve e mostra se essa manutenção compensa.
 
 ### 8.3 Como escolher (plano de avaliação)
 

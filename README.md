@@ -38,12 +38,16 @@ O que não está no documento de contexto, mas está na documentação oficial d
 Requisito: [`uv`](https://docs.astral.sh/uv/). O Python 3.12 é instalado automaticamente.
 
 ```bash
-uv run --python 3.12 pytest -q                                        # testes
+uv run --python 3.12 pytest -q                                        # 30 testes
 uv run --python 3.12 medicoes lancar exemplos/lote.json               # simulação: mostra o que SERIA lançado
-uv run --python 3.12 medicoes lancar exemplos/lote.json --executar    # lança no Sienge simulado
-uv run --python 3.12 medicoes lancar exemplos/lote.json --executar --falhar-em anexos   # falha e retomada sem duplicar
-open interface/index.html                                             # protótipo da tela
+uv run --python 3.12 medicoes lancar exemplos/lote.json --executar --falhar-em anexos   # lança no Sienge simulado; o envio do boleto falha
+uv run --python 3.12 medicoes lancar exemplos/lote.json --executar    # retoma de onde parou, sem criar outra medição
+uv run --python 3.12 medicoes limpar                                  # zera o estado da demonstração
+open interface/index.html                                             # protótipo da tela: clique em "Carregar exemplo"
 ```
+
+- `--falhar-em ambiguo` simula o pior caso: a criação grava no Sienge, mas a resposta não chega. A retomada procura a medição antes de criar de novo.
+- Para confirmar um alerta de atenção (ex.: a diferença de centavos da V17), liste o código em `confirmacoes` na medição do `lote.json`.
 
 ## Estrutura
 
@@ -66,8 +70,13 @@ interface/       protótipo da tela de lote (HTML, CSS e JS, sem build)
 
 **Feito**
 - Planejamento completo, com o mapa "etapa → rota" verificado na spec oficial do Sienge e 19 validações com as mensagens para a usuária.
-- Núcleo: regras, conversão de valores, orquestrador com idempotência e retomada, Sienge simulado com falhas injetáveis, CLI em dry-run e testes.
-- Protótipo da tela de lote: soltar documentos, juntar cards, completar, lançar prontas e comprovante.
+- Núcleo: regras, conversão de valores, orquestrador com idempotência e retomada, Sienge simulado com falhas injetáveis e CLI em dry-run.
+- **30 testes automatizados passando**, cobrindo:
+  - os critérios de aceite do contexto;
+  - as validações V5, V6, V11, V12, V14 e V17 a V19;
+  - a falha e a retomada entre execuções diferentes;
+  - o timeout ambíguo na criação.
+- Protótipo da tela de lote, com a identidade visual do Grupo Baptista Leal: soltar documentos, juntar cards arrastando, completar, lançar as prontas, uma falha com "Tentar de novo" sem duplicar, e comprovante com as pendências.
 
 **Ainda não feito, e por quê**
 - **Cliente HTTP real testado contra uma API.** Não havia API simulada nem credencial disponíveis. As rotas estão mapeadas e documentadas, e só esse módulo muda quando houver acesso.
