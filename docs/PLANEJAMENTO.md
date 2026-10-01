@@ -33,6 +33,26 @@ O caminho manual passa pela tela nova, pela tela antiga, por uma janela separada
 
 **Objetivo:** a usuária lança **todas as medições da semana de uma vez**, informando só o que muda, e **confia** que foram lançadas certas.
 
+```mermaid
+flowchart LR
+    subgraph HOJE["Hoje · uma medição por vez · cerca de 12 etapas"]
+        direction TB
+        H1["Consultar as medições do contrato"] --> H2["Tela nova: contrato, obra, datas e observação"]
+        H2 --> H3["Tela antiga: avaliação do fornecedor"]
+        H3 --> H4["Valores monetários e valor no item"]
+        H4 --> H5["Conferir a totalização"]
+        H5 --> H6["Aba Anexos: um arquivo por vez"]
+    end
+    subgraph DEPOIS["Proposta · a semana inteira de uma vez"]
+        direction TB
+        P1["Soltar os documentos da semana"] --> P2["Informar contrato, valor e observação"]
+        P2 --> P3["Conferir o que o sistema preencheu"]
+        P3 --> P4["Confirmar o total e lançar as prontas"]
+        P4 --> P5["Comprovante e pendências guiadas"]
+    end
+    HOJE -.->|"a ferramenta assume o que se repete"| DEPOIS
+```
+
 **Princípios [DECIDIDO]:**
 - **Simples:** tudo o que o Sienge já sabe, a ferramenta preenche.
 - **Intuitivo:** usa a linguagem da usuária, e ela vê o que vai ser lançado antes de lançar.
@@ -173,6 +193,37 @@ Serviço de medições ─────────────────► AP
 
 ### 3.1 Sequência de um lançamento
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as Usuária
+    participant T as Tela de lote
+    participant S as Serviço de medições
+    participant API as API do Sienge
+    U->>T: Solta os documentos e informa contrato, valor e observação
+    T->>S: Validar a medição
+    S->>API: GET contrato, obras, itens e medições existentes
+    API-->>S: Dados do contrato
+    S-->>T: Preenchimento automático e alertas (V1 a V19)
+    U->>T: Confirma o lote (quantidade e total em R$)
+    T->>S: Lançar as prontas
+    S->>S: Grava a chave de idempotência e congela a data
+    S->>API: POST da medição já com item e quantidade
+    alt Sienge responde
+        API-->>S: 201 com o número da medição
+    else Timeout ou queda
+        S->>API: GET das medições do contrato na data
+        API-->>S: Achou, adota o número. Não achou, pode criar
+    end
+    loop Um anexo por chamada
+        S->>API: POST do anexo (BOLETO, NF, CONTRATO, PROPOSTA)
+    end
+    S->>API: GET da totalização e da consistência
+    API-->>S: Total líquido e consistent
+    S-->>T: Comprovante e pendências
+    T-->>U: Lançada nº 26 · falta a avaliação do fornecedor no Sienge
+```
+
 | # | Passo | Rota | Tipo | Se falhar |
 |---|---|---|---|---|
 | 1 | Ler contrato, obras, unidades, itens e acumulado | GETs de contratos e itens | Leitura | Tenta de novo com espera; persistindo, mostra o erro. Nada a desfazer |
@@ -185,13 +236,39 @@ Serviço de medições ─────────────────► AP
 
 ### 3.2 Estados
 
+```mermaid
+stateDiagram-v2
+    state "Rascunho" as RASCUNHO
+    state "Pronta" as PRONTA
+    state "Precisa de atenção" as ATENCAO
+    state "Caminho manual" as FORA
+    state "Bloqueada" as BLOQ
+    state "Confirmada (data congelada)" as CONF
+    state "Criação enviada" as ENV
+    state "Em dúvida, reconciliar" as RECON
+    state "Criada (nº no Sienge)" as CRIADA
+    state "Falhou em anexos" as FALHOU
+    state "Conferida" as CONFERIDA
+    [*] --> RASCUNHO
+    RASCUNHO --> PRONTA: validações ok
+    RASCUNHO --> ATENCAO: alerta
+    RASCUNHO --> FORA: retenção, caução ou várias unidades
+    RASCUNHO --> BLOQ: bloqueio
+    ATENCAO --> PRONTA: usuária resolve ou confirma
+    PRONTA --> CONF: usuária confirma o lote
+    CONF --> ENV: cria a medição já com o item
+    ENV --> CRIADA: número recebido
+    ENV --> CONF: recusa clara do Sienge, revalida
+    ENV --> RECON: timeout ou queda
+    RECON --> CRIADA: achou a medição, adota o número
+    RECON --> CONF: não achou, pode criar
+    CRIADA --> FALHOU: falha num anexo
+    FALHOU --> CRIADA: tentar de novo, só os que faltam
+    CRIADA --> CONFERIDA: anexos enviados e total conferido
+    CONFERIDA --> [*]
 ```
-RASCUNHO → VALIDADA ─┬─ PRONTA ──► CONFIRMADA → CRIACAO_ENVIADA → CRIADA → ANEXOS_ENVIADOS → CONFERIDA
-                     ├─ PRECISA_ATENCAO (a usuária resolve ou confirma)            └─► pendência: avaliação
-                     ├─ FORA_MVP (segue pelo caminho manual)
-                     └─ BLOQUEADA
-Qualquer passo de escrita → FALHOU_EM_<passo>; a retomada continua do passo que falhou.
-```
+
+Qualquer passo de escrita pode falhar, e a retomada continua do passo que falhou. Depois de conferida, a medição ainda pode ficar com a pendência da avaliação do fornecedor (V19).
 
 `AVALIADA` e `VALOR_LANCADO`, que estavam no contexto, saíram: o valor entra na criação, e a avaliação não tem rota.
 
