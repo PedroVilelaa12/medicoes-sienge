@@ -48,10 +48,14 @@ def ler_lote(caminho: Path) -> list[PedidoMedicao]:
     dados = json.loads(caminho.read_text(encoding="utf-8"))
     pedidos = []
     for i, m in enumerate(dados["medicoes"], start=1):
+        try:
+            valor = ler_valor_br(m["valor"]) if m.get("valor") else None
+        except ValueError as erro:
+            raise ValueError(f"medição {m.get('id', i)} ({m.get('contrato') or 'sem contrato'}): {erro}") from erro
         pedidos.append(PedidoMedicao(
             id=f"{caminho.stem}/{m.get('id', i)}",
             contrato=m.get("contrato"),
-            valor=ler_valor_br(m["valor"]) if m.get("valor") else None,
+            valor=valor,
             observacao=m.get("observacao"),
             anexos=[ler_anexo(caminho.parent, a) for a in m.get("anexos", [])],
             obra_id=m.get("obra"),
@@ -124,7 +128,12 @@ def main(argv: list[str] | None = None) -> int:
         cliente.ambiguas = 1  # grava, mas não responde
     orquestrador = Orquestrador(cliente, Armazem(PASTA / "estado.json"), Config())
 
-    preparadas = orquestrador.preparar(ler_lote(args.lote))
+    try:
+        pedidos = ler_lote(args.lote)
+    except (OSError, ValueError, KeyError) as erro:  # nada foi gravado: corrija o arquivo e rode de novo
+        print(f"Não consegui ler o lote {args.lote}: {erro}", file=sys.stderr)
+        return 2
+    preparadas = orquestrador.preparar(pedidos)
     if args.executar:
         prontas = [e for e in preparadas if e.status is Status.PRONTA]
         retomadas = [e for e in preparadas if e.retomavel]
