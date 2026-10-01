@@ -154,7 +154,7 @@ h2 { font-size: 16px; font-weight: 600; }
 .botao-texto, .botao-link {
   border: 0;
   background: none;
-  padding: 4px 2px;
+  padding: 6px 8px;
   cursor: pointer;
   font-size: 14px;
   color: var(--texto-2);
