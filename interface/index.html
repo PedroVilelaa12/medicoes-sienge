@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Medições da semana · Grupo Baptista Leal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="topo-marca">
+      <div class="marca">
+        <img src="assets/logo-grupo-baptista-leal.png" alt="Grupo Baptista Leal" width="172" height="30">
+      </div>
+      <span class="topo-divisor" aria-hidden="true"></span>
+      <span class="topo-modulo">Suprimentos <span aria-hidden="true">·</span> Contratos e Medições</span>
+    </div>
+    <div class="topo-data" id="data-hoje"></div>
+  </header>
+
+  <main class="pagina">
+    <div class="cabecalho">
+      <div>
+        <h1>Medições da semana</h1>
+        <p class="resumo" id="resumo">Solte os documentos da semana para começar.</p>
+      </div>
+      <button type="button" class="botao-texto" id="limpar">Limpar lote</button>
+    </div>
+
+    <section class="etapa" aria-labelledby="t-docs">
+      <header class="etapa-titulo">
+        <span class="etapa-num" aria-hidden="true">1</span>
+        <div>
+          <h2 id="t-docs">Documentos</h2>
+          <p>Cada arquivo vira um cartão. Arraste um cartão para dentro de outro quando os documentos forem da mesma medição, como a nota e o boleto do mesmo fornecedor.</p>
+        </div>
+      </header>
+
+      <div class="soltar" id="soltar">
+        <div class="soltar-texto">
+          <strong>Solte aqui os boletos e notas fiscais da semana</strong>
+          <span>PDF ou imagem. Nada é gravado no Sienge antes da sua confirmação.</span>
+        </div>
+        <div class="soltar-acoes">
+          <label class="botao botao-secundario">
+            Escolher arquivos
+            <input type="file" id="arquivos" multiple accept=".pdf,image/*" class="oculto">
+          </label>
+          <button type="button" class="botao-link" id="exemplo">Carregar exemplo</button>
+        </div>
+      </div>
+
+      <ul class="cartoes" id="cartoes" aria-label="Documentos agrupados por medição"></ul>
+    </section>
+
+    <section class="etapa" aria-labelledby="t-lista">
+      <header class="etapa-titulo">
+        <span class="etapa-num" aria-hidden="true">2</span>
+        <div>
+          <h2 id="t-lista">Conferir e completar</h2>
+          <p>Abra cada medição, leia o valor no documento e confira o que o sistema preencheu.</p>
+        </div>
+      </header>
+
+      <div class="lista" id="lista-bloco">
+        <div class="lista-cab" aria-hidden="true">
+          <span>Contrato e fornecedor</span>
+          <span class="dir">Valor</span>
+          <span class="centro">Docs</span>
+          <span>Situação</span>
+        </div>
+        <div id="lista" role="list"></div>
+        <p class="vazio" id="vazio">Nenhuma medição por enquanto. Solte os documentos acima ou carregue o exemplo.</p>
+      </div>
+    </section>
+
+    <section class="etapa" id="comprovante" aria-labelledby="t-comprovante" hidden>
+      <header class="etapa-titulo">
+        <span class="etapa-num" aria-hidden="true">3</span>
+        <div>
+          <h2 id="t-comprovante">Comprovante</h2>
+          <p>Medições lançadas no Sienge hoje. A avaliação do fornecedor ainda é feita na tela do Sienge.</p>
+        </div>
+        <button type="button" class="botao botao-secundario imprimir" id="imprimir">Imprimir</button>
+      </header>
+      <div class="comprovante" id="comprovante-lista"></div>
+    </section>
+  </main>
+
+  <div class="barra" id="barra">
+    <div class="barra-conteudo">
+      <p class="barra-info" id="barra-info">Nenhuma medição pronta ainda.</p>
+      <button type="button" class="botao botao-primario" id="lancar" disabled>Lançar prontas</button>
+    </div>
+  </div>
+
+  <dialog id="confirmar" aria-labelledby="confirmar-titulo">
+    <form method="dialog" class="dialogo">
+      <h2 id="confirmar-titulo">Confirmar lançamento</h2>
+      <p id="confirmar-texto"></p>
+      <ul class="dialogo-lista" id="confirmar-lista"></ul>
+      <p class="dialogo-nota">Cada medição é lançada separadamente: se uma falhar, as outras seguem e você pode tentar de novo depois.</p>
+      <div class="dialogo-acoes">
+        <button type="submit" value="voltar" class="botao botao-secundario">Voltar</button>
+        <button type="submit" value="lancar" class="botao botao-primario" id="confirmar-botao">Lançar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="leitor" aria-live="polite" id="aviso-vivo"></div>
+
+  <script src="dados.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
