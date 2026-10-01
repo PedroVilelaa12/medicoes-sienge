@@ -39,7 +39,7 @@ O que não está no documento de contexto, mas está na documentação oficial d
 Requisito: [`uv`](https://docs.astral.sh/uv/). O Python 3.12 é instalado automaticamente.
 
 ```bash
-uv run --python 3.12 pytest -q                                        # 36 testes
+uv run --python 3.12 pytest -q                                        # 37 testes
 uv run --python 3.12 medicoes lancar exemplos/lote.json               # simulação: mostra o que SERIA lançado
 uv run --python 3.12 medicoes lancar exemplos/lote.json --executar --falhar-em anexos   # lança no Sienge simulado; o envio do boleto falha
 uv run --python 3.12 medicoes lancar exemplos/lote.json --executar    # retoma de onde parou, sem criar outra medição
@@ -72,8 +72,11 @@ interface/       protótipo da tela de lote (HTML, CSS e JS, sem build)
 **Feito**
 - Planejamento completo, com o mapa "etapa → rota" verificado na spec oficial do Sienge e 19 validações com as mensagens para a usuária.
 - Núcleo: regras, conversão de valores, orquestrador com idempotência e retomada, Sienge simulado com falhas injetáveis e CLI em dry-run.
-- **Revisão final do código gerado:** 2 bugs encontrados e corrigidos, cada um com um teste que o reproduz. O primeiro era o valor "264.66" lido como R$ 26.466,00; o segundo, uma chave de idempotência gravada, mas nunca consultada.
-- **36 testes automatizados passando**, cobrindo:
+- **Revisão final do código gerado:** 3 problemas encontrados e corrigidos, cada um com um teste que o reproduz:
+  - o valor "264.66" era lido como R$ 26.466,00;
+  - a chave de idempotência era gravada, mas nunca consultada;
+  - a CLI caía com traceback diante de um valor ilegível.
+- **37 testes automatizados passando**, cobrindo:
   - os critérios de aceite do contexto;
   - as validações V5, V6, V11, V12, V14 e V17 a V19;
   - a falha e a retomada entre execuções diferentes;
